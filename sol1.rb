@@ -1,24 +1,28 @@
 $stdout = File.open('aoc.out', 'w')
-input = File.open('aoc.in') do |f|
-  f.readlines.map do |line|
-    winning, have = line.split('|')
-    winning = winning.scan(/\d+/)[1..].map(&:to_i)
-    have = have.scan(/\d+/).map(&:to_i)
-    [winning, have]
+$seeds, $maps = File.open('aoc.in') do |f|
+  paras = f.read.split("\n\n")
+  seeds = paras[0].scan(/\d+/).map(&:to_i)
+  maps = paras[1..-1].map do |para|
+    para.split(/\n/)[1..-1].map do |line|
+      dst, src, len = line.scan(/\d+/).map(&:to_i)
+      [dst, src, len]
+    end
   end
+  [seeds, maps]
 end
 
-points = 0
-input.each do |card|
-  winning, have = card
-  have_good = have.count { |x| winning.include?(x) }
-  if have_good > 0
-    score = 2**(have_good - 1)
-  else
-    score = 0
+def follow(seed)
+  $maps.each do |map|
+    next_seed = seed
+    map.each do |dst, src, len|
+      if (src...(src+len)) === seed
+        next_seed = dst+(seed-src)
+        break
+      end
+    end
+    seed = next_seed
   end
-
-  points += score
+  seed
 end
 
-p points
+p ($seeds.map { |s| follow(s) }.min)
