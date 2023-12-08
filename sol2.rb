@@ -1,39 +1,25 @@
-require 'set'
-
 $stdout = File.open('aoc.out', 'w')
 input = File.open('aoc.in') do |f|
-  f.readlines.map(&:chomp).map(&:chars)
-end
-
-gears = Set.new
-input.size.times do |i|
-  input[i].size.times do |j|
-    if input[i][j] == '*'
-      gears << [i, j]
-    end
+  f.readlines.map do |line|
+    winning, have = line.split('|')
+    winning = winning.scan(/\d+/)[1..].map(&:to_i)
+    have = have.scan(/\d+/).map(&:to_i)
+    have_good = have.count { |x| winning.include?(x) }
+    [winning, have, have_good]
   end
 end
 
-sum = 0
+card_count = Hash.new(1)
 
-gears_used = Hash.new { |h, k| h[k] = [] }
+total_cards = 0
+input.each_with_index do |card, index|
+  winning, have, have_good = card
+  index += 1
+  total_cards += card_count[index]
 
-input.size.times do |i|
-  line = input[i].join
-  pos = 0
-  while m = /\d+/.match(line, pos)
-    [i-1,i,i+1].each do |ii|
-      ((m.begin(0)-1)..(m.end(0))).each do |jj|
-
-        if gears.include?([ii,jj]) && gears_used[[ii,jj]].size < 2
-          gears_used[[ii,jj]] << m.to_s.to_i
-        elsif gears.include?([ii,jj])
-          gears.delete([ii,jj])
-        end
-      end
-    end
-    pos = m.end(0)
+  have_good.times do |i|
+    card_count[index + i + 1] += card_count[index]
   end
 end
 
-p (gears_used.values.select { |v| v.size == 2 }.map { |v| v[0]*v[1] }.sum)
+p total_cards
