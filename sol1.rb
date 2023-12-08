@@ -1,28 +1,29 @@
-$stdout = File.open('aoc.out', 'w')
+require 'set'
 
-red = 12
-green = 13
-blue = 14
+$stdout = File.open('aoc.out', 'w')
+input = File.open('aoc.in') do |f|
+  f.readlines.map(&:chomp).map(&:chars)
+end
+
+symbols = Set.new
+input.size.times do |i|
+  input[i].size.times do |j|
+    if input[i][j] =~ /[^.\d]/
+      symbols << [i, j]
+    end
+  end
+end
 
 sum = 0
-File.open('aoc.in') do |f|
-  f.readlines.map do |line|
-    line =~ /Game (\d+): (.*)/
-    id = $1.to_i
-    rounds = $2
-    bad = false
-    rounds.split(/; /).map do |round|
-      round.split(/, /).map do |color|
-        color =~ /(\d+) (\w+)/
-        c = $2
-        count = $1.to_i
-        bad = true if c == 'blue' && count > blue
-        bad = true if c == 'green' && count > green
-        bad = true if c == 'red' && count > red
-      end
-    end
 
-    sum += id if not bad
+input.size.times do |i|
+  line = input[i].join
+  pos = 0
+  while m = /\d+/.match(line, pos)
+    if [i-1,i,i+1].any? { |ii| ((m.begin(0)-1)..(m.end(0))).any? { |jj| symbols.include?([ii,jj]) }}
+      sum += m.to_s.to_i
+    end
+    pos = m.end(0)
   end
 end
 
