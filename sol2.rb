@@ -1,41 +1,28 @@
 $stdout = File.open('aoc.out', 'w')
-input = File.open('aoc.in') do |f|
-  f.readlines.map(&:chomp)
-end
 
-pat = /\d|one|two|three|four|five|six|seven|eight|nine/
+sum = 0
 
-def dig(s)
-  case s
-  when 'one'
-    '1'
-  when 'two'
-    '2'
-  when 'three'
-    '3'
-  when 'four'
-    '4'
-  when 'five'
-    '5'
-  when 'six'
-    '6'
-  when 'seven'
-    '7'
-  when 'eight'
-    '8'
-  when 'nine'
-    '9'
-  else
-    s
+File.open('aoc.in') do |f|
+  f.readlines.map do |line|
+    line =~ /Game (\d+): (.*)/
+    id = $1.to_i
+    rounds = $2
+    min_blue = min_green = min_red = 0
+
+    rounds.split(/; /).map do |round|
+      round.split(/, /).map do |color|
+        color =~ /(\d+) (\w+)/
+        c = $2
+        count = $1.to_i
+        min_blue = [min_blue, count].max if c == 'blue'
+        min_green = [min_green, count].max if c == 'green'
+        min_red = [min_red, count].max if c == 'red'
+      end
+    end
+
+    power = min_blue * min_green * min_red
+    sum += power
   end
 end
 
-x = input.map do |s|
-  matches = s.size.times.map do |i|
-    s.match(pat, i)
-  end.compact
-
-  (dig(matches.first.to_s) + dig(matches.last.to_s)).to_i
-end.sum
-
-p x
+p sum
